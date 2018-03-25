@@ -27,7 +27,7 @@
     "vue-session": "^0.9.8",
     "vue-wysiwyg": "^1.2.7",
     "vuefire": "^1.4.4",
-    "vuetify": "^1.0.2"
+    "vuetify": "^1.0.5"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

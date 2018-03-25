@@ -6,7 +6,6 @@
     <div style="width:100%">
       <div style="float:left; width:15%"><button style="width:100%" type="button" v-on:click="seen = !seen">+ Add New Client</button> </div>
       <div style="float:right; width:85%"><input style="width:100%" v-model="search_name" type="text" placeholder="Enter name to search"></div>
-      <table id="existing_client_list"> </table>
     </div>
 
     <!--the following div becomes visible one of the above divs come true-->
@@ -30,6 +29,24 @@
         <button>Submit</button>
       </v-form>
     </div>
+
+    <div v-if="seen == false">
+      <v-data-table
+        :headers="headers"
+        :items="items"
+        hide-actions
+        class="elevation-1">
+        
+      <template slot="items" slot-scope="props">
+        <td>{{ props.item.name }}</td>
+        <td class="text-xs-right">{{ props.item.client_fname }}</td>
+        <td class="text-xs-right">{{ props.item.country }}</td>
+        <td class="text-xs-right">{{ props.item.visa_type }}</td>
+      </template>
+      </v-data-table>
+    </div>
+
+
   </div>
 
 </template>
@@ -52,7 +69,21 @@ export default {
       client_fname: '',
       client_lname: '',
       search_name: '',
-      results: '<li>'
+      results: '<li>',
+      headers: [
+          {
+            text: 'Client Name',
+            align: 'left',
+            sortable: true,
+            value: 'client_fname'
+          },
+          { text: 'Visa Type', value: 'visa_type' },
+          { text: 'Coutry', value: 'country' },
+        ],
+        items: [
+          
+        ]
+
     }
   },
   methods: {
@@ -86,24 +117,21 @@ export default {
     }
   },
   watch: { 
-   search_name: function(new_value, old_value) {
+   search_name: function(new_value) {
+     let t = this
      firebase.database().ref('clients').orderByChild("client_fnames").endAt('\uf8ff').on("child_added", function(snapshot) {
-       if(snapshot.val().client_fname){
-         console.log(snapshot.key)
-        //  console.log(snapshot.val().client_fname)
-      //    var table = document.getElementsByTagName('existing_client_list')[0];
-      //    snapshot.forEach(function(name){
-      //      var tr = document.createElement('tr');
-      //      var td = document.createElement('td');
-      //      td.innerText = name.val() + "- "+ JSON.stringify(name.val());
-      //      tr.appendChild(td);
-      //      table.appendChild(tr);
-      //    });
+       if(snapshot.val()){
+         t.items.push(snapshot.val())
+         console.log(snapshot.val().client_fname)
+     
       }
      })
     } 
   }
 }
+
+
+
 
 
 
