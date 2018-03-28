@@ -47,7 +47,7 @@ export default {
           var uid = res.uid;
           db.ref(`users/${uid}`).set({
             name: `${fname} ${lname}`,
-            email: email
+            email: email,
           })
         router.push({ name: 'Dashboard'})
         })
