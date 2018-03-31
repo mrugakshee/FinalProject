@@ -63,6 +63,8 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- dialog ends -->
+
     <v-card-title>
       <v-btn color="primary" dark @click.native.stop="editDialog = true" class="mb-2">Add New Client</v-btn>      
     <v-text-field
@@ -81,6 +83,7 @@
       class="elevation-1"
     >
       <template slot="items" slot-scope="props">
+        <tr @click="selectClient(props.item)">
         <td class="text-xs-left">{{ props.item.client_fname }} {{ props.item.client_lname}}</td>
         <td class="text-xs-left">{{ props.item.visa_type }}</td>        
         <td class="text-xs-left">{{ props.item.country }}</td>
@@ -92,6 +95,7 @@
             <v-icon color="pink">delete</v-icon>
           </v-btn>
         </td>
+        </tr>
       </template>
       <template slot="no-data">
         <v-btn color="primary" @click="initialize">Reset</v-btn>
@@ -105,12 +109,12 @@
   <template>
   <v-layout >
     <v-flex xs12 sm6 offset-sm2>
-      <v-card>
+      <v-card v-if="selectedClient != null">
         <v-card-title primary-title>
           <div>
-            <h3 class="headline mb-0"> {{Cname}} {{Lname}}</h3>
-             <div class="text-xs-left"> Country: {{CountryName}} </div>
-             <div class="text-xs-left"> Visa: {{VisaTypeName}}</div>
+            <h3 class="headline mb-0"> {{selectedClient.client_fname}} {{selectedClient.client_lname}}</h3>
+             <div class="text-xs-left"> Country: {{selectedClient.country}} </div>
+             <div class="text-xs-left"> Visa: {{selectedClient.visa_type}}</div>
              <div> {{timeCard}} </div>
           </div>
         </v-card-title>
@@ -159,6 +163,7 @@ export default {
       timerCardDiv: false,
       uid: '',
       username: '',
+      selectedClient: null,
       headers: [
           {
             text: 'Client Name',
@@ -188,18 +193,6 @@ export default {
       formTitle () {
         return this.editedIndex === -1 ? 'New Client' : 'Edit Client'
       },
-      Cname () {
-        return this.editedItem.client_fname
-    },
-      Lname () {
-        return this.editedItem.client_lname
-      },
-      CountryName () {
-        return this.editedItem.country
-      },
-      VisaTypeName () {
-        return this.editedItem.visa_type        
-      },
       timeCard () {
         return moment().format('MMMM Do YYYY, h:mm:ss a')
       },
@@ -209,7 +202,7 @@ export default {
       dialog (val) {
         val || this.close()
       },
-
+      // TODO disable caseSensitivity 
       search: function(new_value) {
       let t = this
       this.items = []
@@ -221,8 +214,7 @@ export default {
       if (snapshot.val().client_fname.startsWith(new_value))
         t.items.push(snapshot.val())
      })
-    
-    } 
+    }
     },
 
     created () {
@@ -304,15 +296,17 @@ export default {
         console.log("Below is value of variables")
         console.log(this.editedItem.client_fname, this.editedItem.client_lname, this.editedItem.visa_type, this.editedItem.country)
       
+        this.selectClient(clientData)
 
         return database.ref().update(updates);
         // TODO catch error and print it
       },
-      
-      timerCard () {
-        console.log("timerCard() call success")
-        this.timerCardDiv = true
 
+      selectClient(client) {
+        
+        console.log(client)
+        this.selectedClient = client
+        this.items = [client]
       }
     }
   }
