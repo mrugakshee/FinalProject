@@ -194,6 +194,8 @@
 import firebase from 'firebase';
 import { auth, db } from '../firebase';
 
+import Chart from 'chart.js';
+
 var database = firebase.database();
 
 var moment = require('moment');
@@ -214,7 +216,7 @@ export default {
       uid: '',
       username: '',
       selectedClient: null,
-      mstart: '',
+      mStart: '',
       mStop: '',
       mPause: '',
       start: '',
@@ -286,7 +288,7 @@ export default {
         var clientResult = snapshot.val()
         clientResult.key = snapshot.key
         t.items.push(clientResult)
-        console.log("key is", snapshot.key)
+        console.log("key is", clientResult.key)
       }
      })
     }
@@ -377,6 +379,11 @@ export default {
         this.selectClient(clientData)
 
         return database.ref().update(updates);
+
+        // var clientResult = snapshot.val()
+        // clientResult.key = snapshot.key
+        // t.items.push(clientResult)
+
         // TODO catch error and print it
       },
 
@@ -428,7 +435,6 @@ export default {
 
         console.log("I am in stop timer")
         
-        // ***** SENDING TIME TO FIREBASE **** //
 
         
         /*
