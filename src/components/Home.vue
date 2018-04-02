@@ -155,6 +155,8 @@
           
         </v-card-title>
         <div class="timer">
+           <span class="minutes"> {{hours}}</span>
+          <span>:</span>
           <span class="minutes"> {{minutes}}</span>
           <span>:</span>
           <span class="seconds"> {{seconds}}</span>
@@ -215,7 +217,6 @@ export default {
       mstart: '',
       mStop: '',
       mPause: '',
-      timeStamp: '',
       start: '',
       stop: '',
       timeDiff: '',
@@ -251,12 +252,16 @@ export default {
       formTitle () {
         return this.editedIndex === -1 ? 'New Client' : 'Edit Client'
       },
+      hours() {
+        const hours = Math.floor(this.totalTime / 3600)
+        return this.padTime(hours)
+      },
       minutes () {
-        const minutes = Math.floor(this.totalTime / 60)
+        const minutes = Math.floor((this.totalTime % 3600) / 60)
         return this.padTime(minutes)
       },
       seconds () {
-        const seconds = this.totalTime - (this.minutes * 60)
+        const seconds = this.totalTime % 60
         return this.padTime(seconds)
       }
     },
@@ -277,8 +282,12 @@ export default {
       }
       firebase.database().ref('clients').orderByChild("client_fname").startAt(new_value).endAt('\uf8ff').on("child_added", function (snapshot) {
       
-      if (snapshot.val().client_fname.startsWith(new_value))
-        t.items.push(snapshot.val())
+      if (snapshot.val().client_fname.startsWith(new_value)){
+        var clientResult = snapshot.val()
+        clientResult.key = snapshot.key
+        t.items.push(clientResult)
+        console.log("key is", snapshot.key)
+      }
      })
     }
     },
@@ -338,15 +347,15 @@ export default {
         }   
         
           var clientData = {
-          client_fname: this.editedItem.client_fname,
-          client_lname: this.editedItem.client_lname,
-          visa_type: this.editedItem.visa_type,
-          country: this.editedItem.country,
-          user: this.uid,
-          username: this.username,
-          time: 
-            {timestamp: this.timeStamp, timeDiff: this.timeDiff}
-            
+            client_fname: this.editedItem.client_fname,
+            client_lname: this.editedItem.client_lname,
+            visa_type: this.editedItem.visa_type,
+            country: this.editedItem.country,
+            user: this.uid,
+            username: this.username,
+            time: 
+              {timestamp: this.mStart, timeSpent: this.timeDiff},
+            conclusion: this.conclusion
         };
 
         // TODO error checking - existing client?
@@ -366,7 +375,6 @@ export default {
         console.log(this.editedItem.client_fname, this.editedItem.client_lname, this.editedItem.visa_type, this.editedItem.country)
       
         this.selectClient(clientData)
-        this.timeStamp = moment().format('DD/MM/YYYY, h:mm:ss')
 
         return database.ref().update(updates);
         // TODO catch error and print it
@@ -378,12 +386,14 @@ export default {
         this.selectedClient = client
         this.items = [client]
         this.resetTimer()
+        console.log("Client key is", client.key)
       },
 
       playTimer: function() {
-        this.timer = setInterval(() => this.incrementTimer(), 1000)
+        this.timer = setInterval(this.incrementTimer, 1000)
       
         this.mStart = moment().format('DD/MM/YYYY, h:mm:ss')
+        
       /*
         this.interval = setInterval(() => this.timeIncrement(), 1000); //1000ms = 1 second
         console.log(this.start)
@@ -405,14 +415,16 @@ export default {
         
       // },
 
-      stopTimer: function(pauseTimer) {
+      stopTimer: function() {
         clearInterval(this.timer);
         this.mStop = moment().format('DD/MM/YYYY h:mm:ss')
 
         console.log("total time: ", this.totalTime)
         console.log("timer: ", this.timer)
+        this.timeDiff = this.hours+':'+this.minutes+':'+this.seconds
+
         
-        this.timeDiff = moment.utc(moment(this.mStop,"DD/MM/YYYY HH:mm:ss").diff(moment(this.mStart,"DD/MM/YYYY HH:mm:ss"))).format("HH:mm:ss")
+        // this.timeDiff = moment.utc(moment(this.mStop,"DD/MM/YYYY HH:mm:ss").diff(moment(this.mStart,"DD/MM/YYYY HH:mm:ss"))).format("HH:mm:ss")
 
         console.log("I am in stop timer")
         
@@ -432,10 +444,10 @@ export default {
       },
 
       resetTimer: function (){
+        clearInterval(this.timer)        
         this.totalTime = ''
         this.timer = ''
         this.timeDiff = ''      
-        clearInterval(this.timer)
       },
 
       //TODO reset timer?
@@ -452,6 +464,14 @@ export default {
         console.log("I'm in submit")
         console.log("Conclusion is:", this.conclusion)
         this.finishSessionDialog = false
+        console.log(this)
+
+        var updates = {};
+        updates['/clients/' + this.selectedClient.key + '/time/timeSpent'] = this.timeDiff
+        updates['/clients/' + this.selectedClient.key + '/time/timestamp'] = this.mStart
+        updates['/clients/' + this.selectedClient.key + '/conclusion'] = this.conclusion
+        return database.ref().update(updates)
+        
       }
 
     }
@@ -511,10 +531,7 @@ a {
 
 <!--
 
-Current Task: Once a client is added -
-  - implement timer
-    - get buttons to work
-  - dialog saying session has ended
+Current Task: 
 
 
   Sooooooo many more things to implement!!!
