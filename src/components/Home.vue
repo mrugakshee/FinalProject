@@ -1,6 +1,39 @@
 <template>
 <v-app>
   <div id='home'>
+    <v-dialog v-model="finishSessionDialog" max-width="500px">
+      <v-card>
+        <v-card-text>
+          <v-container grid-list-md>
+            <v-layout row wrap>
+                  <v-flex xs6>
+
+                <v-subheader>Total Time</v-subheader>
+                  </v-flex>
+                  <v-flex xs6>
+                    {{this.timeDiff}}
+                  </v-flex>
+
+
+                <v-subheader> Process Started?</v-subheader>  
+                  <v-flex xs6>
+                  <input type="radio" v-model="conclusion" value="yes">
+                  <label> Yes</label>
+
+                  <input type="radio" v-model="conclusion" value="no" >
+                  <label> No</label>
+
+                  
+                  <input type="radio" v-model="conclusion" value="later">
+                  <label> Later</label>
+                  </v-flex>
+                  <v-btn color="blue darken-1" flat @click.native="submit" >Submit</v-btn>
+                  
+            </v-layout>
+          </v-container>
+        </v-card-text>
+      </v-card>
+    </v-dialog>    
     <v-dialog v-model="editDialog" max-width="500px">
       
       <v-card>
@@ -59,7 +92,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="blue darken-1" flat @click.native="close">Cancel</v-btn>
-          <v-btn color="blue darken-1" flat @click.native="save(); timerCard()" >Save</v-btn>
+          <v-btn color="blue darken-1" flat @click.native="save" >Save</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -113,22 +146,37 @@
         <v-card-title primary-title>
           <div>
             <h3 class="headline mb-0"> {{selectedClient.client_fname}} {{selectedClient.client_lname}}</h3>
+            
              <div class="text-xs-left"> Country: {{selectedClient.country}} </div>
              <div class="text-xs-left"> Visa: {{selectedClient.visa_type}}</div>
-             <div> {{timeCard}} </div>
+             <div class="text-xs-left" v-if="timeDiff != null"> Total Time: {{this.timeDiff}} </div>
+             
           </div>
+          
         </v-card-title>
+        <div class="timer">
+          <span class="minutes"> {{minutes}}</span>
+          <span>:</span>
+          <span class="seconds"> {{seconds}}</span>
+        </div>
+        
         <v-card-actions>
           <v-spacer></v-spacer>
-           <v-btn  large fab color="green">
+           <v-btn  large fab color="green" @click="playTimer">
             <v-icon>play_arrow</v-icon>
            </v-btn>
-           <v-btn  large fab color="yellow">
+           <!-- <v-btn  large fab color="yellow" @click="pauseTimer">
             <v-icon>pause</v-icon>
-           </v-btn>
-           <v-btn  large fab color="red">
+           </v-btn> -->
+           <v-btn  large fab color="red" @click="stopTimer">
             <v-icon>stop</v-icon>
            </v-btn>
+        </v-card-actions>
+          <hr>        
+        <v-card-actions>
+          <v-spacer></v-spacer>          
+           <v-btn color="primary" @click.native="finishSessionDialog = true" dark class="mb-2 centre">Finish</v-btn> 
+          <v-spacer></v-spacer>
         </v-card-actions>
       </v-card>
     </v-flex>
@@ -160,10 +208,20 @@ export default {
       client_lname: '',
       search: '',
       editDialog: false,
-      timerCardDiv: false,
+      finishSessionDialog: false,
       uid: '',
       username: '',
       selectedClient: null,
+      mstart: '',
+      mStop: '',
+      mPause: '',
+      timeStamp: '',
+      start: '',
+      stop: '',
+      timeDiff: '',
+      timer: 0,
+      totalTime: '',
+      conclusion:'',
       headers: [
           {
             text: 'Client Name',
@@ -193,9 +251,14 @@ export default {
       formTitle () {
         return this.editedIndex === -1 ? 'New Client' : 'Edit Client'
       },
-      timeCard () {
-        return moment().format('MMMM Do YYYY, h:mm:ss a')
+      minutes () {
+        const minutes = Math.floor(this.totalTime / 60)
+        return this.padTime(minutes)
       },
+      seconds () {
+        const seconds = this.totalTime - (this.minutes * 60)
+        return this.padTime(seconds)
+      }
     },
 
     watch: {
@@ -207,8 +270,11 @@ export default {
       let t = this
       this.items = []
       console.log(new_value)
-      if (new_value == '')
+      if (new_value == '') {
+        this.selectedClient = null
+        this.resetTimer()
         return 
+      }
       firebase.database().ref('clients').orderByChild("client_fname").startAt(new_value).endAt('\uf8ff').on("child_added", function (snapshot) {
       
       if (snapshot.val().client_fname.startsWith(new_value))
@@ -277,7 +343,10 @@ export default {
           visa_type: this.editedItem.visa_type,
           country: this.editedItem.country,
           user: this.uid,
-          username: this.username
+          username: this.username,
+          time: 
+            {timestamp: this.timeStamp, timeDiff: this.timeDiff}
+            
         };
 
         // TODO error checking - existing client?
@@ -297,6 +366,7 @@ export default {
         console.log(this.editedItem.client_fname, this.editedItem.client_lname, this.editedItem.visa_type, this.editedItem.country)
       
         this.selectClient(clientData)
+        this.timeStamp = moment().format('DD/MM/YYYY, h:mm:ss')
 
         return database.ref().update(updates);
         // TODO catch error and print it
@@ -307,7 +377,83 @@ export default {
         console.log(client)
         this.selectedClient = client
         this.items = [client]
+        this.resetTimer()
+      },
+
+      playTimer: function() {
+        this.timer = setInterval(() => this.incrementTimer(), 1000)
+      
+        this.mStart = moment().format('DD/MM/YYYY, h:mm:ss')
+      /*
+        this.interval = setInterval(() => this.timeIncrement(), 1000); //1000ms = 1 second
+        console.log(this.start)
+      */
+      },
+
+      // pauseTimer: function() {
+      //   clearInterval(this.timer)
+      //   this.timer = null
+
+      //   // set a flag to true when pause is accessed, 
+      //   // get time when pause is accessed, 
+      //   // set if condition in play timer saying if flag true then
+      //   // get time stamp again
+      //   // set total time time stamp just gotten - time stamp in pause timer
+
+      //   //need duration of pause
+      //   console.log("I am in pause timer")
+        
+      // },
+
+      stopTimer: function(pauseTimer) {
+        clearInterval(this.timer);
+        this.mStop = moment().format('DD/MM/YYYY h:mm:ss')
+
+        console.log("total time: ", this.totalTime)
+        console.log("timer: ", this.timer)
+        
+        this.timeDiff = moment.utc(moment(this.mStop,"DD/MM/YYYY HH:mm:ss").diff(moment(this.mStart,"DD/MM/YYYY HH:mm:ss"))).format("HH:mm:ss")
+
+        console.log("I am in stop timer")
+        
+        // ***** SENDING TIME TO FIREBASE **** //
+
+        
+        /*
+      this.stop = moment().format('DD/MM/YYYY, h:mm:ss')
+      console.log(this.stop)
+      
+      this.timeDiff = moment.utc(moment(this.stop,"DD/MM/YYYY HH:mm:ss").diff(moment(this.start,"DD/MM/YYYY HH:mm:ss"))).format("HH:mm:ss")
+      this.timerIncrement = this.timeDiff
+
+      console.log(this.timeDiff)
+      */
+
+      },
+
+      resetTimer: function (){
+        this.totalTime = ''
+        this.timer = ''
+        this.timeDiff = ''      
+        clearInterval(this.timer)
+      },
+
+      //TODO reset timer?
+
+      incrementTimer: function() {
+        this.totalTime++
+      },
+
+      padTime: function(time) {
+        return (time < 10 ? '0' : '') + time
+      },
+
+      submit() {
+        console.log("I'm in submit")
+        console.log("Conclusion is:", this.conclusion)
+        this.finishSessionDialog = false
       }
+
     }
   }
 </script>
@@ -366,10 +512,14 @@ a {
 <!--
 
 Current Task: Once a client is added -
-  - calls another function
-  - opens in container div underneath seach box with details of client
-  - Start session, End session, and Pause session buttons to the right
   - implement timer
+    - get buttons to work
   - dialog saying session has ended
+
+
+  Sooooooo many more things to implement!!!
+   - reset timer
+   - reset card when selected client is refreshed
+   
     
 -->
