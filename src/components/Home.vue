@@ -365,20 +365,19 @@ export default {
 
         // Get a key for a new Post.
         var newClientKey = database.ref().child('clients').push().key;
+        clientData.key = newClientKey
         // TODO Error checking for if key couldn't be created
 
         // Write the new post's data simultaneously in the posts list and the user's post list.
         var updates = {};
-        console.log(clientData)
         updates['/clients/' + newClientKey] = clientData;
         this.editDialog = false
         
-        console.log("Below is value of variables")
-        console.log(this.editedItem.client_fname, this.editedItem.client_lname, this.editedItem.visa_type, this.editedItem.country)
-      
+        console.log("selected client is", clientData)
+
+        database.ref().update(updates);
         this.selectClient(clientData)
 
-        return database.ref().update(updates);
 
         // var clientResult = snapshot.val()
         // clientResult.key = snapshot.key
@@ -388,8 +387,8 @@ export default {
       },
 
       selectClient(client) {
+        console.log("We are in selectedClient", client)
         
-        console.log(client)
         this.selectedClient = client
         this.items = [client]
         this.resetTimer()
@@ -468,7 +467,6 @@ export default {
 
       submit() {
         console.log("I'm in submit")
-        console.log("Conclusion is:", this.conclusion)
         this.finishSessionDialog = false
         console.log(this)
 
