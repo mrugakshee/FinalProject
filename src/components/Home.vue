@@ -149,7 +149,15 @@
             
              <div class="text-xs-left"> Country: {{selectedClient.country}} </div>
              <div class="text-xs-left"> Visa: {{selectedClient.visa_type}}</div>
+             <!-- <div class="text-xs-left">
+               CRS Score:<input required v-model.number="this.crsScore" type="number">
+             </div>
+             <div class="text-xs-left"> Result: <span> {{crs}}</span></div> -->
+               
+
+
              <div class="text-xs-left" v-if="timeDiff != null"> Total Time: {{this.timeDiff}} </div>
+             
              
           </div>
           
@@ -211,11 +219,13 @@ export default {
       client_fname: '',
       client_lname: '',
       search: '',
+      crsScore: '',
       editDialog: false,
       finishSessionDialog: false,
       uid: '',
       username: '',
       selectedClient: null,
+      day: '',
       mStart: '',
       mStop: '',
       mPause: '',
@@ -266,6 +276,10 @@ export default {
         const seconds = this.totalTime % 60
         return this.padTime(seconds)
       }
+      //,
+      // crs () {
+      //   (this.crsScore >= this.crsMin) ? "Qualified" : "Unqualified";
+      // }
     },
 
     watch: {
@@ -340,6 +354,7 @@ export default {
       save () {
         var user = firebase.auth().currentUser;
         var uid = user.uid;
+        console.log("this is day in save", this.day)
 
         console.log("Adding New Client to database", this.editedItem.client_fname, this.editedItem.client_lname);        
         if (this.editedIndex > -1) {
@@ -363,12 +378,8 @@ export default {
         // TODO error checking - existing client?
         // TODO validation of entered name
 
-        // Get a key for a new Post.
         var newClientKey = database.ref().child('clients').push().key;
-        clientData.key = newClientKey
-        // TODO Error checking for if key couldn't be created
-
-        // Write the new post's data simultaneously in the posts list and the user's post list.
+        
         var updates = {};
         updates['/clients/' + newClientKey] = clientData;
         this.editDialog = false
@@ -376,6 +387,7 @@ export default {
         console.log("selected client is", clientData)
 
         database.ref().update(updates);
+        clientData.key = newClientKey        
         this.selectClient(clientData)
 
 
@@ -399,6 +411,8 @@ export default {
         this.timer = setInterval(this.incrementTimer, 1000)
       
         this.mStart = moment().format('DD/MM/YYYY, h:mm:ss')
+        this.day = moment().day()
+        console.log("this is day", this.day)
         
       /*
         this.interval = setInterval(() => this.timeIncrement(), 1000); //1000ms = 1 second
@@ -473,7 +487,9 @@ export default {
         var updates = {};
         updates['/clients/' + this.selectedClient.key + '/time/timeSpent'] = this.timeDiff
         updates['/clients/' + this.selectedClient.key + '/time/timestamp'] = this.mStart
+        updates['/clients/' + this.selectedClient.key + '/time/day'] = this.day
         updates['/clients/' + this.selectedClient.key + '/conclusion'] = this.conclusion
+        
         return database.ref().update(updates)
         
       }
@@ -535,7 +551,10 @@ a {
 
 <!--
 
-Current Task: 
+Current Task:
+- Adding CRS score and qualification aspect to the form depending on CRS score
+- getting some form of data displayed on Dashboard
+
 
 
   Sooooooo many more things to implement!!!
