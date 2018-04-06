@@ -48,6 +48,7 @@ export default {
           db.ref(`users/${uid}`).set({
             name: `${fname} ${lname}`,
             email: email,
+            admin: false
           })
         router.push({ name: 'Dashboard'})
         })

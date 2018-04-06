@@ -5,15 +5,15 @@
     <h1>Dashboards</h1>
     </md-layout>
     <div v-if="chartData"> 
-      	<line-chart :chart-data="dayCount"></line-chart>
-      	<bar-chart :chart-data="count"></bar-chart>
+      	<line-chart :chart-data="monthCount"></line-chart>
+        <h2> Client conversion rate for the year </h2>
+      	<bar-chart :chart-data="timeSpent"></bar-chart>
         
         
   </div>
   </div>
 </v-app>
 </template>
-
 
 
 <script>
@@ -35,6 +35,8 @@ export default {
     chartData: null,
     count: [],
     dayCount: [],
+    monthCount: [],
+    admin: '',
     
 
   }),
@@ -42,39 +44,62 @@ export default {
   created() {
   var user = firebase.auth().currentUser;
   this.uid = user.uid
-  console.log("CL 1 This is current user", firebase.auth().currentUser)
-  console.log("CL 2 This is uid of this", this.uid)
-
+  
   let t = this
-  database.ref('clients').orderByChild('user').equalTo(this.uid).on('value', function (snapshot) {
-    var cd = snapshot.val()
-    t.chartData = cd
-    console.log("This is chartData", t.chartData)
-    t.count = t.aggregateCount(cd)
-    t.dayCount = t.aggregateDay(cd)
-    console.log("Day count: ", t.dayCount)
+  
+  firebase.database().ref('users').child(this.uid).on('value', function (snapshot) {
+      // console.log("This is auth.currentuser", auth.currentUser)
+      // console.log("This is auth.SNP", snapshot.val())
+    if (snapshot.val().admin == true) {
+      t.admin = true
+    }
     
+    var buildChart = function (snapshot) {
+      var cd = snapshot.val()
+      t.chartData = cd
+      console.log("This is chartData", cd)
 
+      t.count = t.aggregateCount(cd)
+      t.dayCount = t.aggregateDay(cd)
+      t.timeSpent = t.aggregateTS(cd)
+      t.monthCount = t.aggregateMonth(cd)
+      console.log("Day count: ", t.dayCount)
+    }
+    
+    var ref = database.ref('clients').orderByChild('user')
+    if (t.admin == false)
+    {
+    ref = ref.equalTo(t.uid)
+    }
+    ref.on('value', buildChart)
   })
+
+  
+
+  
+
+/*
+  Charts:
+  1. current month pie chart
+
+  Need: Aggregation of Total time spent with Qualified nad Unqualified clients
+        Total Time for current month.
+
+  2. Histogram showing monthly progress
+   - X-Axis: Jan, Feb, ...
+   - Y-Axis: Total Time spent
+
+   Need: Labels: Months
+         Aggregation of total time spent for each month
+
+  3. Total closes:
+      Number of clients that answered yes.
+
+*/
 
   
   },
 
-  methods: {
-    aggregateCount(chartData) {
-      return Object.keys(chartData).reduce((acc, key) => {
-        if (chartData[key].conclusion === 'yes'){
-          acc[0]++
-        }
-        else if (chartData[key].conclusion === 'no'){
-          acc[1]++
-        }
-        else {
-          acc[2]++
-        }
-      return acc;
-      },[0, 0, 0])
-    },
     // "clients" : {
     // "-L8tfnzsecWcFzYBIMS6" : {
     //   "client_fname" : "Pineapple",
@@ -89,14 +114,85 @@ export default {
     //   "username" : "Mruga Palwe",
     //   "visa_type" : "Work"
     // },
+  methods: {
+    aggregateCount(chartData) {
+      return Object.keys(chartData).reduce((acc, key) => {
+        var totalTime
+        if (chartData[key].conclusion === 'yes'){
+          acc[0]++
+        }
+        else if (chartData[key].conclusion === 'no'){
+          acc[1]++
+        }
+        else {
+          acc[2]++
+        }
+      return acc;
+      },[0, 0, 0])
+    },
 
-    /*
-    {
-      yes: []
-      no: []
-      later: []
-    }
-    */
+    aggregateStatus(chartData) {
+      return Object.keys(chartData).reduce((acc, key) => {
+        var totalTime
+        if (chartData[key].status === 'Qualified'){
+          acc[0]++
+        }
+        else {
+          acc[1]++
+        }
+      return acc;
+      },[0, 0])
+    },
+
+// const values = acc[entry.conclusion] || [0,0,0,0,0,0,0,0]
+// values[Number(day)] ++
+// and then acc[entry.conclusion] = values
+
+
+    aggregateTS(chartData) {
+      return Object.keys(chartData).reduce((acc, key) => {
+        // const values = []
+        var entry = chartData[key]
+        var month = moment(entry.time.timestamp, "DD/MM/YYYY, hh:mm:ss").month()
+        var timespent = moment.duration(entry.time.timeSpent).asSeconds()
+        
+        // values[Number(entry.day)]
+        console.log("This is entry in AggTT", entry)
+        
+        if (!acc[entry.status])
+          acc[entry.status] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+        var currentValues = acc[entry.status];
+        currentValues[month] += timespent;
+        acc[entry.status] = currentValues;
+        return acc;
+      },{})
+    },
+
+    aggregateMonth(chartData) {
+      return Object.keys(chartData).reduce((acc, key) => {
+        // const values = []
+        var entry = chartData[key]
+        var month = moment(entry.time.timestamp, "DD/MM/YYYY, hh:mm:ss").month()
+        
+        // values[Number(entry.day)]
+        console.log("This is entry in AggMonth", entry)
+
+          // const values = acc[entry.conclusion] || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+          // values[Number(day)] ++
+          // acc[entry.conclusion] = values
+        
+        
+        if (!acc[entry.conclusion])
+          acc[entry.conclusion] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+        var currentValues = acc[entry.conclusion];
+        currentValues[Number(month)]++;
+        acc[entry.conclusion] = currentValues;
+        console.log("This is acc",acc)
+        return acc;
+      },{})
+    },
 
     aggregateDay(chartData) {
       return Object.keys(chartData).reduce((acc, key) => {

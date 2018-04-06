@@ -10,17 +10,27 @@
       return {
         datacollection: {
         //Data to be represented on x-axis
-          labels: ['Yes', 'No', 'Later'], 
+          labels: ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'], 
           datasets: [
             {
-              label: 'Data One',
-              backgroundColor: '#f87979',
-              pointBackgroundColor: 'white',
+              label: 'Qualifed',
+              backgroundColor: 'green',
+              pointBackgroundColor: 'green',
               borderWidth: 1,
               pointBorderColor: '#249EBF',
               //Data to be represented on y-axis
-              data: this.chartData
-            }
+              data: this.chartData.Qualified
+            },
+            {
+              label: 'Unqualified',
+              backgroundColor: 'red',
+              pointBackgroundColor: 'red',
+              borderWidth: 1,
+              pointBorderColor: '#249EBF',
+              //Data to be represented on y-axis
+              data: this.chartData.Unqualified
+            },
+            
           ]
         },
         //Chart.js options that controls the appearance of the chart
@@ -51,7 +61,7 @@
     mounted () {
     //renderChart function renders the chart with the datacollection and options object.
       this.renderChart(this.datacollection, this.options)
-        console.log("this is props in lineCharts", this.chartData)
+        console.log("this is props in barCharts", this.chartData)
       
       
     },

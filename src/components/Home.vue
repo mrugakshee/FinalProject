@@ -1,7 +1,7 @@
 <template>
 <v-app>
   <div id='home'>
-    <v-dialog v-model="finishSessionDialog" max-width="500px">
+    <v-dialog v-model="finishSessionDialog" max-width="500px" >
       <v-card>
         <v-card-text>
           <v-container grid-list-md>
@@ -14,8 +14,10 @@
                     {{this.timeDiff}}
                   </v-flex>
 
-
+                  <v-flex xs6>
+                
                 <v-subheader> Process Started?</v-subheader>  
+                  </v-flex>
                   <v-flex xs6>
                   <input type="radio" v-model="conclusion" value="yes">
                   <label> Yes</label>
@@ -27,6 +29,20 @@
                   <input type="radio" v-model="conclusion" value="later">
                   <label> Later</label>
                   </v-flex>
+
+                  <v-flex xs6>
+                  
+                  <v-subheader> Status:</v-subheader>  
+                  </v-flex>
+
+                  <v-flex xs6>
+                  <input type="radio" v-model="status" value="Qualified">
+                  <label> Qualified</label>
+
+                  <input type="radio" v-model="status" value="Unqualified">
+                  <label> Unqualified</label>
+                  </v-flex>
+
                   <v-btn color="blue darken-1" flat @click.native="submit" >Submit</v-btn>
                   
             </v-layout>
@@ -226,6 +242,7 @@ export default {
       username: '',
       selectedClient: null,
       day: '',
+      // month: '',
       mStart: '',
       mStop: '',
       mPause: '',
@@ -235,6 +252,7 @@ export default {
       timer: 0,
       totalTime: '',
       conclusion:'',
+      status: '',
       headers: [
           {
             text: 'Client Name',
@@ -372,7 +390,8 @@ export default {
             username: this.username,
             time: 
               {timestamp: this.mStart, timeSpent: this.timeDiff},
-            conclusion: this.conclusion
+            conclusion: this.conclusion,
+            status: this.status,
         };
 
         // TODO error checking - existing client?
@@ -412,7 +431,10 @@ export default {
       
         this.mStart = moment().format('DD/MM/YYYY, h:mm:ss')
         this.day = moment().day()
-        console.log("this is day", this.day)
+        // this.month = moment().month()
+        // var monthh = this.mStart.month();
+        // console.log("This is month in playTimer", monthh)
+        // console.log("this is month", this.month)
         
       /*
         this.interval = setInterval(() => this.timeIncrement(), 1000); //1000ms = 1 second
@@ -488,7 +510,9 @@ export default {
         updates['/clients/' + this.selectedClient.key + '/time/timeSpent'] = this.timeDiff
         updates['/clients/' + this.selectedClient.key + '/time/timestamp'] = this.mStart
         updates['/clients/' + this.selectedClient.key + '/time/day'] = this.day
+        // updates['/clients/' + this.selectedClient.key + '/time/month'] = this.month
         updates['/clients/' + this.selectedClient.key + '/conclusion'] = this.conclusion
+        updates['/clients/' + this.selectedClient.key + '/status'] = this.status
         
         return database.ref().update(updates)
         

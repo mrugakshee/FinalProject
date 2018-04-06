@@ -38,7 +38,11 @@ export default {
       console.log("Logging in with Email and Password:", email, password);
       let t = this
       auth.signInWithEmailAndPassword(email, password).then(function(ret) {
-        if (ret) t.loggedIn = auth.currentUser
+        if (ret) {
+          t.loggedIn = auth.currentUser
+          
+         
+        }
       router.push({ name: 'Dashboard'})
       })
       .catch(function(error) {

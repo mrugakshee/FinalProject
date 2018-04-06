@@ -10,7 +10,7 @@
       return {
         datacollection: {
         //Data to be represented on x-axis
-          labels: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], 
+          labels: ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'], 
           datasets: [
             {
               label: 'Yes',
