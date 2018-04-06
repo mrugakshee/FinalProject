@@ -9,12 +9,14 @@
         <div style="max-width=500px; max-height=300px"> 
           <h2> Client conversion rate for the year </h2>
           <line-chart id="line-chart-style" :chart-data="monthCount"></line-chart>
-
+          <br>
+          <br>
+          <br>
           <v-data-table
           :headers="headers"
           :items="items"
           hide-actions
-          class="elevation-1">
+          class="elevation-1" id="adminDataTable">
 
           <template slot="items" slot-scope="props">
             <td class="text-xs-left">{{ props.item.name }}</td>
@@ -33,6 +35,9 @@
           <line-chart id="line-chart-style" :chart-data="monthCount"></line-chart>
           <h2> Time spent per type of client per month </h2>
           <bar-chart id="bar-chart-style" :chart-data="timeSpent"></bar-chart>
+          <br>
+          <br>
+          <br>
         </div>
       </div>
         
@@ -282,5 +287,9 @@ export default {
     display: block;
     height: 300px;
     width: 1000px;
+}
+#adminDataTable {
+    width: 500px;
+    margin-left: 250px;
 }
 </style>
