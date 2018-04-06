@@ -4,11 +4,37 @@
     <md-layout>
     <h1>Dashboards</h1>
     </md-layout>
-    <div v-if="chartData"> 
-      	<line-chart :chart-data="monthCount"></line-chart>
-        <h2> Client conversion rate for the year </h2>
-      	<bar-chart :chart-data="timeSpent"></bar-chart>
-        
+    <div v-if="chartData">
+      <div v-if="admin">
+        <div style="max-width=500px; max-height=300px"> 
+          <h2> Client conversion rate for the year </h2>
+          <line-chart id="line-chart-style" :chart-data="monthCount"></line-chart>
+
+          <v-data-table
+          :headers="headers"
+          :items="items"
+          hide-actions
+          class="elevation-1">
+
+          <template slot="items" slot-scope="props">
+            <td class="text-xs-left">{{ props.item.name }}</td>
+            <td class="text-xs-left">{{ props.item.totalClosed }}</td>        
+            <td class="text-xs-left">{{ props.item.avgClosed }}</td>
+            
+            </template>
+          </v-data-table>
+
+
+        </div>
+      </div>
+      <div v-else>
+          <div style="max-width=500px; max-height=300px"> 
+          <h2> Client conversion rate for the year </h2>
+          <line-chart id="line-chart-style" :chart-data="monthCount"></line-chart>
+          <h2> Time spent per type of client per month </h2>
+          <bar-chart id="bar-chart-style" :chart-data="timeSpent"></bar-chart>
+        </div>
+      </div>
         
   </div>
   </div>
@@ -37,8 +63,34 @@ export default {
     dayCount: [],
     monthCount: [],
     admin: '',
-    
-
+    users: '',
+    headers: [
+      {
+        text: 'Employee',
+        align: 'left',
+        sortable: false,
+        value: 'name'
+      },
+      { text: 'Total Closed', value: 'totalClosed' },
+      { text: 'Avg', value: 'avgClosed' },
+    ],
+    items: [
+      {
+        name:"Mruga Palwe",
+        totalClosed: "10",
+        avgClosed: "5"
+      },
+      {
+        name: "Spongebob Squarepants",
+        totalClosed: "12",
+        avgClosed: "6"
+      },
+      {
+        name: "Finn The Human",
+        totalClosed: "16",
+        avgClosed: "4",
+      },
+    ],
   }),
 
   created() {
@@ -50,6 +102,7 @@ export default {
   firebase.database().ref('users').child(this.uid).on('value', function (snapshot) {
       // console.log("This is auth.currentuser", auth.currentUser)
       // console.log("This is auth.SNP", snapshot.val())
+      
     if (snapshot.val().admin == true) {
       t.admin = true
     }
@@ -57,19 +110,21 @@ export default {
     var buildChart = function (snapshot) {
       var cd = snapshot.val()
       t.chartData = cd
-      console.log("This is chartData", cd)
-
-      t.count = t.aggregateCount(cd)
-      t.dayCount = t.aggregateDay(cd)
-      t.timeSpent = t.aggregateTS(cd)
-      t.monthCount = t.aggregateMonth(cd)
-      console.log("Day count: ", t.dayCount)
+      if (!t.admin) {
+        t.monthCount = t.aggregateMonth(cd)
+        t.timeSpent = t.aggregateTS(cd)
+      }
+      else {
+        t.monthCount = t.aggregateMonth(cd)
+      }
+      // t.count = t.aggregateCount(cd)
+      // t.dayCount = t.aggregateDay(cd)
     }
     
     var ref = database.ref('clients').orderByChild('user')
     if (t.admin == false)
     {
-    ref = ref.equalTo(t.uid)
+      ref = ref.equalTo(t.uid)
     }
     ref.on('value', buildChart)
   })
@@ -79,22 +134,16 @@ export default {
   
 
 /*
-  Charts:
-  1. current month pie chart
+ items: [
+          {
+            name: "Mruga Palwe",
+            TotalClosed: ,
+            avgClosed: 
+          }
+      ]
 
-  Need: Aggregation of Total time spent with Qualified nad Unqualified clients
-        Total Time for current month.
-
-  2. Histogram showing monthly progress
-   - X-Axis: Jan, Feb, ...
-   - Y-Axis: Total Time spent
-
-   Need: Labels: Months
-         Aggregation of total time spent for each month
-
-  3. Total closes:
-      Number of clients that answered yes.
-
+      totalClosed = length of conclusion
+      avgClosed = totalClosed/current_month + 1
 */
 
   
@@ -115,21 +164,7 @@ export default {
     //   "visa_type" : "Work"
     // },
   methods: {
-    aggregateCount(chartData) {
-      return Object.keys(chartData).reduce((acc, key) => {
-        var totalTime
-        if (chartData[key].conclusion === 'yes'){
-          acc[0]++
-        }
-        else if (chartData[key].conclusion === 'no'){
-          acc[1]++
-        }
-        else {
-          acc[2]++
-        }
-      return acc;
-      },[0, 0, 0])
-    },
+    
 
     aggregateStatus(chartData) {
       return Object.keys(chartData).reduce((acc, key) => {
@@ -144,6 +179,21 @@ export default {
       },[0, 0])
     },
 
+    // aggregateClosed(chartData) {
+    //   return Object.keys(chartData).reduce((acc, key) => {
+    //     var entry = chartData[key];
+    //     // var users = chartData.username;
+
+        
+    //     for (var i = 0; i < 4; i++) {
+    //       if(entry.conclusion === 'yes' && entry.username == this.users[i]) {
+    //         this.items[i].totalClosed ++;
+    //       }
+    //     }
+    //   return acc;
+    //   },[])
+    // },
+
 // const values = acc[entry.conclusion] || [0,0,0,0,0,0,0,0]
 // values[Number(day)] ++
 // and then acc[entry.conclusion] = values
@@ -157,7 +207,7 @@ export default {
         var timespent = moment.duration(entry.time.timeSpent).asSeconds()
         
         // values[Number(entry.day)]
-        console.log("This is entry in AggTT", entry)
+        // console.log("This is entry in AggTT", entry)
         
         if (!acc[entry.status])
           acc[entry.status] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -176,7 +226,7 @@ export default {
         var month = moment(entry.time.timestamp, "DD/MM/YYYY, hh:mm:ss").month()
         
         // values[Number(entry.day)]
-        console.log("This is entry in AggMonth", entry)
+        // console.log("This is entry in AggMonth", entry)
 
           // const values = acc[entry.conclusion] || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
           // values[Number(day)] ++
@@ -189,7 +239,7 @@ export default {
         var currentValues = acc[entry.conclusion];
         currentValues[Number(month)]++;
         acc[entry.conclusion] = currentValues;
-        console.log("This is acc",acc)
+        // console.log("This is acc",acc)
         return acc;
       },{})
     },
@@ -223,4 +273,14 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang='scss'>
+#line-chart-style {
+    display: block;
+    height: 300px;
+    width: 1000px;
+}
+#bar-chart-style {
+    display: block;
+    height: 300px;
+    width: 1000px;
+}
 </style>
