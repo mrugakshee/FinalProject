@@ -13,9 +13,9 @@
           labels: ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'], 
           datasets: [
             {
-              label: 'Yes',
-              borderColor: '#f87979',
-              pointBackgroundColor: 'white',
+              label: 'Closed',
+              borderColor: 'green',
+              pointBackgroundColor: 'green',
               borderWidth: 2,
               pointBorderColor: '#249EBF',
               //Data to be represented on y-axis
@@ -23,8 +23,8 @@
             },
             {
               label: 'No',
-              borderColor: '#blue',
-              pointBackgroundColor: 'blue',
+              borderColor: 'red',
+              pointBackgroundColor: 'red',
               borderWidth: 2,
               pointBorderColor: '#249EBF',
               //Data to be represented on y-axis
@@ -32,8 +32,8 @@
             },
             {
               label: 'Later',
-              borderColor: '#green',
-              pointBackgroundColor: 'green',
+              borderColor: 'blue',
+              pointBackgroundColor: 'blue',
               borderWidth: 2,
               pointBorderColor: '#249EBF',
               //Data to be represented on y-axis
@@ -45,6 +45,10 @@
         options: {
           scales: {
             yAxes: [{
+              scaleLabel: {
+                display: true,
+                labelString: 'Total Number of clients'
+              },
               ticks: {
                 beginAtZero: true
               },

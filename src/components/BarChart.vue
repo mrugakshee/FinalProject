@@ -14,8 +14,8 @@
           datasets: [
             {
               label: 'Qualifed',
-              backgroundColor: 'green',
-              pointBackgroundColor: 'green',
+              backgroundColor: '#359636',
+              pointBackgroundColor: '#359636',
               borderWidth: 1,
               pointBorderColor: '#249EBF',
               //Data to be represented on y-axis
@@ -23,8 +23,8 @@
             },
             {
               label: 'Unqualified',
-              backgroundColor: 'red',
-              pointBackgroundColor: 'red',
+              backgroundColor: '#c94949',
+              pointBackgroundColor: '#c94949',
               borderWidth: 1,
               pointBorderColor: '#249EBF',
               //Data to be represented on y-axis
@@ -37,6 +37,10 @@
         options: {
           scales: {
             yAxes: [{
+              scaleLabel: {
+                display: true,
+                labelString: 'Total Time spent on Clients (in seconds)'
+              },
               ticks: {
                 beginAtZero: true
               },
