@@ -82,18 +82,18 @@ export default {
     items: [
       {
         name:"Mruga Palwe",
-        totalClosed: "10",
-        avgClosed: "5"
+        totalClosed: "7",
+        avgClosed: "3"
       },
       {
         name: "Spongebob Squarepants",
-        totalClosed: "12",
-        avgClosed: "6"
+        totalClosed: "3",
+        avgClosed: "0.6"
       },
       {
         name: "Finn The Human",
-        totalClosed: "16",
-        avgClosed: "4",
+        totalClosed: "2",
+        avgClosed: "0.4",
       },
     ],
   }),
@@ -121,6 +121,7 @@ export default {
       }
       else {
         t.monthCount = t.aggregateMonth(cd)
+        t.items = t.aggregateClosed(cd)
       }
       // t.count = t.aggregateCount(cd)
       // t.dayCount = t.aggregateDay(cd)
@@ -138,36 +139,12 @@ export default {
 
   
 
-/*
- items: [
-          {
-            name: "Mruga Palwe",
-            TotalClosed: ,
-            avgClosed: 
-          }
-      ]
 
-      totalClosed = length of conclusion
-      avgClosed = totalClosed/current_month + 1
-*/
+
 
   
   },
 
-    // "clients" : {
-    // "-L8tfnzsecWcFzYBIMS6" : {
-    //   "client_fname" : "Pineapple",
-    //   "client_lname" : "Peeled",
-    //   "conclusion" : "yes",
-    //   "country" : "Australia",
-    //   "time" : {
-    //     "timeSpent" : "00:00:02",
-    //     "timestamp" : "01/04/2018, 11:19:49"
-    //   },
-    //   "user" : "2aCdoDPq01apQsu9sUhZdse5hLS2",
-    //   "username" : "Mruga Palwe",
-    //   "visa_type" : "Work"
-    // },
   methods: {
     
 
@@ -183,26 +160,6 @@ export default {
       return acc;
       },[0, 0])
     },
-
-    // aggregateClosed(chartData) {
-    //   return Object.keys(chartData).reduce((acc, key) => {
-    //     var entry = chartData[key];
-    //     // var users = chartData.username;
-
-        
-    //     for (var i = 0; i < 4; i++) {
-    //       if(entry.conclusion === 'yes' && entry.username == this.users[i]) {
-    //         this.items[i].totalClosed ++;
-    //       }
-    //     }
-    //   return acc;
-    //   },[])
-    // },
-
-// const values = acc[entry.conclusion] || [0,0,0,0,0,0,0,0]
-// values[Number(day)] ++
-// and then acc[entry.conclusion] = values
-
 
     aggregateTS(chartData) {
       return Object.keys(chartData).reduce((acc, key) => {
@@ -220,6 +177,7 @@ export default {
         var currentValues = acc[entry.status];
         currentValues[month] += timespent;
         acc[entry.status] = currentValues;
+        console.log("acc",acc)
         return acc;
       },{})
     },

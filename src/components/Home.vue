@@ -6,44 +6,44 @@
         <v-card-text>
           <v-container grid-list-md>
             <v-layout row wrap>
-                  <v-flex xs6>
+              <v-flex xs6>
 
                 <v-subheader>Total Time</v-subheader>
-                  </v-flex>
-                  <v-flex xs6>
-                    {{this.timeDiff}}
-                  </v-flex>
+              </v-flex>
+              <v-flex xs6>
+                 {{this.timeDiff}}
+              </v-flex>
 
-                  <v-flex xs6>
+              <v-flex xs6>
                 
                 <v-subheader> Process Started?</v-subheader>  
-                  </v-flex>
-                  <v-flex xs6>
-                  <input type="radio" v-model="conclusion" value="yes">
-                  <label> Yes</label>
+              </v-flex>
+              <v-flex xs6>
+                <input type="radio" v-model="conclusion" value="yes">
+                <label> Yes</label>
 
-                  <input type="radio" v-model="conclusion" value="no" >
-                  <label> No</label>
+                <input type="radio" v-model="conclusion" value="no" >
+                <label> No</label>
 
+                
+                <input type="radio" v-model="conclusion" value="later">
+                <label> Later</label>
+              </v-flex>
+
+              <v-flex xs6>
                   
-                  <input type="radio" v-model="conclusion" value="later">
-                  <label> Later</label>
-                  </v-flex>
+                <v-subheader> Status:</v-subheader>  
+              </v-flex>
 
-                  <v-flex xs6>
-                  
-                  <v-subheader> Status:</v-subheader>  
-                  </v-flex>
+              <v-flex xs6>
+                <input type="radio" v-model="status" value="Qualified">
+                <label> Qualified</label>
 
-                  <v-flex xs6>
-                  <input type="radio" v-model="status" value="Qualified">
-                  <label> Qualified</label>
+                <input type="radio" v-model="status" value="Unqualified">
+                <label> Unqualified</label>
+              </v-flex>
 
-                  <input type="radio" v-model="status" value="Unqualified">
-                  <label> Unqualified</label>
-                  </v-flex>
-
-                  <v-btn color="blue darken-1" flat @click.native="submit" >Submit</v-btn>
+              <v-btn color="blue darken-1" flat @click.native="submit" >Submit</v-btn>
                   
             </v-layout>
           </v-container>
@@ -63,14 +63,18 @@
               <v-flex xs12 sm6 md4>
                 <v-text-field label="First name" required v-model="editedItem.client_fname"></v-text-field>
               </v-flex>
+
               <v-flex xs12 sm6 md4>
                 <v-text-field label="Last name" required v-model="editedItem.client_lname"></v-text-field>
               </v-flex>
+
               <v-container fluid>
                 <v-layout row wrap>
+
                   <v-flex xs6>
-                <v-subheader>Visa Type</v-subheader>
+                    <v-subheader>Visa Type</v-subheader>
                   </v-flex>
+
                   <v-flex xs6>
                     <v-select
                       :items = "visaList"
@@ -86,7 +90,7 @@
                 </v-layout>
                 <v-layout row wrap>
                   <v-flex xs6>
-                <v-subheader>Country</v-subheader>
+                    <v-subheader>Country</v-subheader>
                   </v-flex>
                   <v-flex xs6>
                     <v-select
@@ -116,12 +120,12 @@
 
     <v-card-title>
       <v-btn color="primary" dark @click.native.stop="editDialog = true" class="mb-2">Add New Client</v-btn>      
-    <v-text-field
-          append-icon="search"
-          label="Search"
-          single-line
-          hide-details
-          v-model="search"
+        <v-text-field
+              append-icon="search"
+              label="Search"
+              single-line
+              hide-details
+              v-model="search"
         ></v-text-field>
     </v-card-title>
         
@@ -140,6 +144,7 @@
           <v-btn icon class="mx-0" @click="editItem(props.item)">
             <v-icon color="teal">edit</v-icon>
           </v-btn>
+      
           <v-btn icon class="mx-0" @click="deleteItem(props.item)">
             <v-icon color="pink">delete</v-icon>
           </v-btn>
@@ -162,19 +167,9 @@
         <v-card-title primary-title>
           <div>
             <h3 class="headline mb-0"> {{selectedClient.client_fname}} {{selectedClient.client_lname}}</h3>
-            
              <div class="text-xs-left"> Country: {{selectedClient.country}} </div>
              <div class="text-xs-left"> Visa: {{selectedClient.visa_type}}</div>
-             <!-- <div class="text-xs-left">
-               CRS Score:<input required v-model.number="this.crsScore" type="number">
-             </div>
-             <div class="text-xs-left"> Result: <span> {{crs}}</span></div> -->
-               
-
-
              <div class="text-xs-left" v-if="timeDiff != null"> Total Time: {{this.timeDiff}} </div>
-             
-             
           </div>
           
         </v-card-title>
@@ -242,7 +237,6 @@ export default {
       username: '',
       selectedClient: null,
       day: '',
-      // month: '',
       mStart: '',
       mStop: '',
       mPause: '',
@@ -294,10 +288,7 @@ export default {
         const seconds = this.totalTime % 60
         return this.padTime(seconds)
       }
-      //,
-      // crs () {
-      //   (this.crsScore >= this.crsMin) ? "Qualified" : "Unqualified";
-      // }
+    
     },
 
     watch: {
@@ -338,7 +329,7 @@ export default {
         console.log(snapshot.val())
         t.username = snapshot.val().name;
       
-    })
+        })
       }
     },
 
@@ -346,13 +337,13 @@ export default {
       initialize () {
         this.items = []
         
-        },
+      },
       
       //TODO edit client functionality needs to start working
       editItem (item) {
-      this.editedIndex = this.items.indexOf(item)
-      this.editedItem = Object.assign({}, item)
-      this.dialog = true
+        this.editedIndex = this.items.indexOf(item)
+        this.editedItem = Object.assign({}, item)
+        this.dialog = true
       },
 
       // TODO Delete functionality should not be there - what if user deletes clients to increase bonus?
@@ -431,10 +422,6 @@ export default {
       
         this.mStart = moment().format('DD/MM/YYYY, h:mm:ss')
         this.day = moment().day()
-        // this.month = moment().month()
-        // var monthh = this.mStart.month();
-        // console.log("This is month in playTimer", monthh)
-        // console.log("this is month", this.month)
         
       /*
         this.interval = setInterval(() => this.timeIncrement(), 1000); //1000ms = 1 second
@@ -442,20 +429,6 @@ export default {
       */
       },
 
-      // pauseTimer: function() {
-      //   clearInterval(this.timer)
-      //   this.timer = null
-
-      //   // set a flag to true when pause is accessed, 
-      //   // get time when pause is accessed, 
-      //   // set if condition in play timer saying if flag true then
-      //   // get time stamp again
-      //   // set total time time stamp just gotten - time stamp in pause timer
-
-      //   //need duration of pause
-      //   console.log("I am in pause timer")
-        
-      // },
 
       stopTimer: function() {
         clearInterval(this.timer);
@@ -466,22 +439,8 @@ export default {
         this.timeDiff = this.hours+':'+this.minutes+':'+this.seconds
 
         
-        // this.timeDiff = moment.utc(moment(this.mStop,"DD/MM/YYYY HH:mm:ss").diff(moment(this.mStart,"DD/MM/YYYY HH:mm:ss"))).format("HH:mm:ss")
-
         console.log("I am in stop timer")
         
-
-        
-        /*
-      this.stop = moment().format('DD/MM/YYYY, h:mm:ss')
-      console.log(this.stop)
-      
-      this.timeDiff = moment.utc(moment(this.stop,"DD/MM/YYYY HH:mm:ss").diff(moment(this.start,"DD/MM/YYYY HH:mm:ss"))).format("HH:mm:ss")
-      this.timerIncrement = this.timeDiff
-
-      console.log(this.timeDiff)
-      */
-
       },
 
       resetTimer: function (){
@@ -521,8 +480,6 @@ export default {
     }
   }
 </script>
-
-  
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang='scss'>
@@ -571,19 +528,3 @@ a {
 }
 
 </style>
-
-
-<!--
-
-Current Task:
-- Adding CRS score and qualification aspect to the form depending on CRS score
-- getting some form of data displayed on Dashboard
-
-
-
-  Sooooooo many more things to implement!!!
-   - reset timer
-   - reset card when selected client is refreshed
-   
-    
--->
